@@ -1,0 +1,103 @@
+# 股票数据分析系统配置文件
+
+# 数据源配置
+data_sources:
+  # Tushare配置
+  tushare:
+    token: "your_tushare_token_here"  # 请在tushare官网申请token
+    enabled: true
+    
+  # yfinance配置
+  yfinance:
+    enabled: true
+    timeout: 30
+    
+  # AKShare配置
+  akshare:
+    enabled: true
+
+# 数据库配置
+database:
+  # SQLite配置（默认）
+  sqlite:
+    path: "data/stock_data.db"
+    enabled: true
+    
+  # MySQL配置（可选）
+  mysql:
+    host: "localhost"
+    port: 3306
+    username: "root"
+    password: "password"
+    database: "stock_analysis"
+    enabled: false
+
+# 江恩轮中轮分析配置
+gann_analysis:
+  # 基础参数
+  base_cycle: 360  # 基础周期（度）
+  time_cycles: [7, 14, 30, 60, 90, 120, 180, 360]  # 时间周期（天）
+  price_levels: 24  # 价格分割级数
+  
+  # 计算精度
+  precision: 4
+  
+  # 关键角度
+  key_angles: [45, 90, 135, 180, 225, 270, 315, 360]
+
+# 量价分析配置
+volume_price_analysis:
+  # 移动平均线周期
+  ma_periods: [5, 10, 20, 60]
+  
+  # 成交量分析参数
+  volume_threshold: 1.5  # 放量倍数
+  volume_ma_period: 20   # 成交量均线周期
+  
+  # 价格分析参数
+  price_change_threshold: 0.03  # 价格变动阈值（3%）
+
+# 数据更新配置
+data_update:
+  # 自动更新
+  auto_update: true
+  update_interval: 3600  # 更新间隔（秒）
+  
+  # 数据范围
+  default_period: "2y"  # 默认获取2年数据
+  max_retries: 3        # 最大重试次数
+
+# 日志配置
+logging:
+  level: "INFO"  # DEBUG, INFO, WARNING, ERROR
+  file_path: "logs/stock_analysis.log"
+  max_size: "10MB"
+  backup_count: 5
+  
+# 输出配置
+output:
+  # 图表配置
+  charts:
+    dpi: 300
+    figsize: [12, 8]
+    style: "seaborn-v0_8"
+    
+  # 报告配置
+  reports:
+    format: "html"  # html, pdf, excel
+    output_dir: "reports"
+
+# 股票列表配置
+stocks:
+  # 默认关注股票（示例）
+  watchlist:
+    - "000001.SZ"  # 平安银行
+    - "000002.SZ"  # 万科A
+    - "600000.SH"  # 浦发银行
+    - "600036.SH"  # 招商银行
+    
+  # 指数列表
+  indices:
+    - "000001.SH"  # 上证指数
+    - "399001.SZ"  # 深证成指
+    - "399006.SZ"  # 创业板指
