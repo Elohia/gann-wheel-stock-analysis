@@ -533,6 +533,93 @@ get_logger(name: str = None) -> Logger
 - 数据库操作失败时返回False
 - 所有异常都会记录到日志文件
 
+## 实时数据接口
+
+### 获取实时股价数据
+
+```python
+get_realtime_data(symbol: str) -> dict
+```
+
+获取指定股票的实时价格数据。
+
+**参数：**
+- `symbol` (str): 股票代码
+
+**返回：**
+- `dict`: 实时数据字典
+
+**返回结果结构：**
+```python
+{
+    "symbol": "000001",
+    "name": "平安银行",
+    "price": 12.50,
+    "change": 0.15,
+    "change_pct": 1.21,
+    "volume": 1000000,
+    "amount": 12500000.0,
+    "high": 12.60,
+    "low": 12.30,
+    "open": 12.35,
+    "pre_close": 12.35,
+    "timestamp": "2024-01-15 14:30:00"
+}
+```
+
+### 获取分时数据
+
+```python
+get_tick_data(symbol: str) -> dict
+```
+
+获取指定股票的分时数据。
+
+**参数：**
+- `symbol` (str): 股票代码
+
+**返回：**
+- `dict`: 分时数据字典
+
+### 获取盘口数据
+
+```python
+get_depth_data(symbol: str) -> dict
+```
+
+获取指定股票的盘口数据（买卖五档）。
+
+**参数：**
+- `symbol` (str): 股票代码
+
+**返回：**
+- `dict`: 盘口数据字典
+
+### 开始实时监控
+
+```python
+start_realtime_monitor(symbols: list) -> dict
+```
+
+开始监控指定股票的实时数据。
+
+**参数：**
+- `symbols` (list): 股票代码列表
+
+**返回：**
+- `dict`: 监控状态信息
+
+### 停止实时监控
+
+```python
+stop_realtime_monitor() -> dict
+```
+
+停止所有股票的实时数据监控。
+
+**返回：**
+- `dict`: 停止状态信息
+
 ## 使用示例
 
 ### 完整分析流程
@@ -560,6 +647,26 @@ if result:
     
     print(f"支撑位: {support_levels}")
     print(f"交易信号: {len(trading_signals)} 个")
+```
+
+### 实时数据使用
+
+```python
+from src.data.realtime_data import RealtimeDataManager
+
+# 初始化实时数据管理器
+realtime_manager = RealtimeDataManager()
+
+# 获取实时数据
+realtime_data = realtime_manager.get_realtime_data("000001")
+print(f"当前价格: {realtime_data['price']}")
+
+# 开始监控
+realtime_manager.start_realtime_monitor(["000001", "000002"])
+
+# 获取分时数据
+tick_data = realtime_manager.get_tick_data("000001")
+print(f"分时数据点数: {len(tick_data['data'])}")
 ```
 
 ### 自定义分析

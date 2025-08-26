@@ -24,6 +24,7 @@ from contextlib import asynccontextmanager
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from main import StockAnalysisSystem
+from src.data.realtime_fetcher import RealtimeFetcher
 from api.models import (
     # 请求模型
     StockDataRequest, AnalysisRequest, BatchAnalysisRequest,
@@ -40,18 +41,20 @@ from api.models import (
 
 # 全局变量
 analysis_system: Optional[StockAnalysisSystem] = None
+realtime_fetcher: Optional[RealtimeFetcher] = None
 app_start_time = datetime.now()
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """应用生命周期管理"""
-    global analysis_system
+    global analysis_system, realtime_fetcher
     
     # 启动时初始化
     try:
         print("正在初始化股票分析系统...")
         analysis_system = StockAnalysisSystem()
+        realtime_fetcher = RealtimeFetcher(analysis_system.config_manager)
         print("股票分析系统初始化完成")
     except Exception as e:
         print(f"初始化失败: {e}")
@@ -61,7 +64,10 @@ async def lifespan(app: FastAPI):
     
     # 关闭时清理
     print("正在关闭股票分析系统...")
+    if realtime_fetcher:
+        await realtime_fetcher.stop_monitoring()
     analysis_system = None
+    realtime_fetcher = None
     print("股票分析系统已关闭")
 
 
@@ -336,6 +342,89 @@ async def analyze_batch_stocks(request: BatchAnalysisRequest):
             status_code=500,
             detail=f"批量分析时发生错误: {str(e)}"
         )
+
+
+@app.get("/stocks/realtime/{symbol}")
+async def get_realtime_data(symbol: str):
+    """获取股票实时数据"""
+    try:
+        if realtime_fetcher is None:
+            raise HTTPException(
+                status_code=503,
+                detail="实时数据获取器未初始化"
+            )
+        
+        # 获取实时价格数据
+        realtime_data = await realtime_fetcher.get_realtime_price(symbol)
+        return realtime_data
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/stocks/realtime/{symbol}/tick")
+async def get_tick_data(symbol: str):
+    """获取股票分时数据"""
+    try:
+        if realtime_fetcher is None:
+            raise HTTPException(
+                status_code=503,
+                detail="实时数据获取器未初始化"
+            )
+        
+        # 获取分时数据
+        tick_data = await realtime_fetcher.get_tick_data(symbol)
+        return tick_data
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/stocks/realtime/{symbol}/depth")
+async def get_market_depth(symbol: str):
+    """获取股票盘口数据"""
+    try:
+        if realtime_fetcher is None:
+            raise HTTPException(
+                status_code=503,
+                detail="实时数据获取器未初始化"
+            )
+        
+        # 获取盘口数据
+        depth_data = await realtime_fetcher.get_market_depth(symbol)
+        return depth_data
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/stocks/realtime/monitor")
+async def start_monitoring(symbols: List[str]):
+    """开始监控指定股票的实时数据"""
+    try:
+        if realtime_fetcher is None:
+            raise HTTPException(
+                status_code=503,
+                detail="实时数据获取器未初始化"
+            )
+        
+        await realtime_fetcher.start_monitoring(symbols)
+        return {"message": f"开始监控 {len(symbols)} 只股票", "symbols": symbols}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/stocks/realtime/stop_monitor")
+async def stop_monitoring():
+    """停止实时数据监控"""
+    try:
+        if realtime_fetcher is None:
+            raise HTTPException(
+                status_code=503,
+                detail="实时数据获取器未初始化"
+            )
+        
+        await realtime_fetcher.stop_monitoring()
+        return {"message": "已停止实时数据监控"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.get("/analysis/{symbol}", response_model=AnalysisResponse)
