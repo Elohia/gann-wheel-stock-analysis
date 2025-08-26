@@ -4,6 +4,13 @@
 
 ## 🌟 项目特色
 
+### 📈 实时数据获取
+- **多数据源支持**：AKShare、新浪财经、东方财富等
+- **实时价格监控**：5秒级数据更新，支持价格变动告警
+- **分时数据分析**：获取详细的分时成交数据
+- **盘口数据展示**：实时买卖五档数据
+- **智能缓存机制**：提升数据获取效率，减少API调用
+
 ### 核心分析功能
 - **江恩轮中轮分析**：基于江恩理论的时间和价格分析
 - **量价关系分析**：深度分析成交量与价格的关系
@@ -58,6 +65,15 @@ python run_api.py --port 8001
 python run_interactive.py
 ```
 
+#### 3. 测试实时数据功能
+```bash
+# 运行实时数据演示
+python examples/realtime_data_example.py
+
+# 或直接测试API接口
+curl http://localhost:8001/stocks/realtime/000001
+```
+
 #### 3. 命令行模式
 ```bash
 # 分析单只股票
@@ -102,6 +118,19 @@ Content-Type: application/json
 #### 获取分析结果
 ```http
 GET /api/v1/analysis/{symbol}/latest
+```
+
+#### 实时数据接口
+```http
+GET /api/v1/stocks/realtime/{symbol}
+```
+
+```http
+GET /api/v1/stocks/realtime/{symbol}/tick
+```
+
+```http
+GET /api/v1/stocks/realtime/{symbol}/depth
 ```
 
 ### 响应示例
